@@ -1,4 +1,7 @@
 openweathermap-api-example
 /.idea/
+*.pyc
+/notifier_modules/*.pyc
+
 
 
