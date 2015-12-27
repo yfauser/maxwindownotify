@@ -33,7 +33,7 @@ daemon, and what options are available:
 
 .. code:: bash
 
-    $ python maxwindownotify.py --help
+    $ maxwindownotify --help
     usage: maxwindownotify.py [-h] [-i INTERVAL] [-n NETWORK] [-c CITY]
                               [-t THRESHOLD] -k OWMAPPID [-s] [-u USER] [-p TOKEN]
                               [-v]
@@ -72,4 +72,4 @@ Example:
 
 .. code:: bash
 
-    python maxwindownotify.py -k 82k4v1b99s41212e5bf5490432bb89f4 -u abcCKnM9uYhjng3kLV6czGFUsmZ76D -p ahxYZcjhXT6P5zDt265LGyuLVaDQNx -i 15 -c Berlin -t 8
+    maxwindownotify -k 82k4v1b99s41212e5bf5490432bb89f4 -u abcCKnM9uYhjng3kLV6czGFUsmZ76D -p ahxYZcjhXT6P5zDt265LGyuLVaDQNx -i 15 -c Berlin -t 8
