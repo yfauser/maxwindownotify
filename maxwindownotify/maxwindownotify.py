@@ -121,6 +121,9 @@ class MaxConnection:
             logging.log(logging.ERROR, 'Could not send UDP discover brodcast, socket error is: {}'.format(e))
             sys.exit()
 
+        cube_data = None
+        cube_ip = None
+
         while True:
             try:
                 recv_data, recvaddr = udp_recv_socket.recvfrom(4096)
@@ -152,8 +155,8 @@ class MaxConnection:
             tcp_socket.connect((self.cube_ip, self.cube_port))
         except (socket.timeout, socket.error) as e:
             logging.log(logging.ERROR, 'Could not open TCP connection to MAX Cube, socket error is: {}'.format(e))
-            return None
             tcp_socket.close()
+            return None
 
         received_data = b''
         logging.log(logging.INFO, 'connecting to MAX Cube to retrieve data')
@@ -193,9 +196,7 @@ class MaxConnection:
 
         data['rooms'] = {}
         for i in range(data['room_count']):
-            room = {}
-            room['id'] = ord(decoded.read(1))
-            room['name_len'] = ord(decoded.read(1))
+            room = {'id': ord(decoded.read(1)), 'name_len': ord(decoded.read(1))}
             room['name'] = decoded.read(room['name_len'])
             room['rf_address'] = binascii.b2a_hex(decoded.read(3))
             data['rooms'][room['id']] = room
@@ -203,11 +204,8 @@ class MaxConnection:
         data['devices_count'] = ord(decoded.read(1))
         data['devices'] = []
         for i in range(data['devices_count']):
-            device = {}
-            device['type'] = ord(decoded.read(1))
-            device['rf_address'] = binascii.b2a_hex(decoded.read(3))
-            device['serial'] = decoded.read(10)
-            device['name_len'] = ord(decoded.read(1))
+            device = {'type': ord(decoded.read(1)), 'rf_address': binascii.b2a_hex(decoded.read(3)),
+                      'serial': decoded.read(10), 'name_len': ord(decoded.read(1))}
             device['name'] = decoded.read(device['name_len'])
             device['room_id'] = ord(decoded.read(1))
             data['devices'].append(device)
@@ -304,57 +302,7 @@ class OpenWeatherMap:
             return None
 
 
-def main(args, loglevel):
-    last_window_status = None
-    logging.basicConfig(format="%(asctime)-15s %(levelname)s: %(message)s", level=loglevel)
-    notifier_log_http = False
-    if loglevel == logging.DEBUG:
-        notifier_log_http = True
-    if args.user and args.token:
-        notify = Notifier(user=args.user, token=args.token, debug=notifier_log_http)
-    else:
-        notify = Notifier()
-
-    temperature = OpenWeatherMap(args.owmappid)
-
-    logging.log(logging.INFO, 'searching for MAX Cube in the network')
-    max_cube = MaxConnection(discover_ip_subnet=args.network)
-
-    while True:
-        skip_run = False
-        window_status = max_cube.window_switch_status(args.simulation)
-        logging.log(logging.INFO, 'current window data: {}'.format(window_status))
-        outside_temperature = temperature.get_current_temperature(args.city)
-        logging.log(logging.INFO, 'current temperature in {}: {}'.format(args.city, outside_temperature))
-
-        if not window_status:
-            skip_run = True
-            logging.log(logging.INFO, 'did not receive any data from MAX Cube, skipping this cycle')
-        elif not outside_temperature:
-            skip_run = True
-            logging.log(logging.INFO, 'did not receive any temperature data, skipping this cycle')
-        elif not outside_temperature <= args.threshold:
-            skip_run = True
-            logging.log(logging.INFO, 'current outside temperature above threshold of {}, skipping this '
-                                      'cycle'.format(args.threshold))
-
-        if not last_window_status and window_status:
-            last_window_status = window_status
-
-        if not skip_run:
-            for rf_addr in window_status:
-                if window_status[rf_addr]['status'] == 'open':
-                    if window_status[rf_addr]['status'] == last_window_status[rf_addr]['status']:
-                        logging.log(logging.INFO, 'sending notify because of open window')
-                        notify.send_msg('{} was open for more than {} minutes, and the temperature '
-                                        'in {} is {}'.format(window_status[rf_addr]['name'],
-                                                             args.interval, args.city, outside_temperature))
-        last_window_status = window_status
-        logging.log(logging.INFO, 'sleeping for {} minutes'.format(args.interval))
-        time.sleep(int(args.interval)*60)
-
-
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description="This deamon polls the MAX Cube for all window status. "
                                                  "If a window is open longer than twice the poll interval a "
                                                  "notification will be sent using the notifier plugin",
@@ -405,4 +353,54 @@ if __name__ == '__main__':
     else:
         loglevel = logging.WARNING
 
-    main(args, loglevel)
+    last_window_status = None
+    logging.basicConfig(format="%(asctime)-15s %(levelname)s: %(message)s", level=loglevel)
+    notifier_log_http = False
+    if loglevel == logging.DEBUG:
+        notifier_log_http = True
+    if args.user and args.token:
+        notify = Notifier(user=args.user, token=args.token, debug=notifier_log_http)
+    else:
+        notify = Notifier()
+
+    temperature = OpenWeatherMap(args.owmappid)
+
+    logging.log(logging.INFO, 'searching for MAX Cube in the network')
+    max_cube = MaxConnection(discover_ip_subnet=args.network)
+
+    while True:
+        skip_run = False
+        window_status = max_cube.window_switch_status(args.simulation)
+        logging.log(logging.INFO, 'current window data: {}'.format(window_status))
+        outside_temperature = temperature.get_current_temperature(args.city)
+        logging.log(logging.INFO, 'current temperature in {}: {}'.format(args.city, outside_temperature))
+
+        if not window_status:
+            skip_run = True
+            logging.log(logging.INFO, 'did not receive any data from MAX Cube, skipping this cycle')
+        elif not outside_temperature:
+            skip_run = True
+            logging.log(logging.INFO, 'did not receive any temperature data, skipping this cycle')
+        elif not outside_temperature <= args.threshold:
+            skip_run = True
+            logging.log(logging.INFO, 'current outside temperature above threshold of {}, skipping this '
+                                      'cycle'.format(args.threshold))
+
+        if not last_window_status and window_status:
+            last_window_status = window_status
+
+        if not skip_run:
+            for rf_addr in window_status:
+                if window_status[rf_addr]['status'] == 'open':
+                    if window_status[rf_addr]['status'] == last_window_status[rf_addr]['status']:
+                        logging.log(logging.INFO, 'sending notify because of open window')
+                        notify.send_msg('{} was open for more than {} minutes, and the temperature '
+                                        'in {} is {}'.format(window_status[rf_addr]['name'],
+                                                             args.interval, args.city, outside_temperature))
+        last_window_status = window_status
+        logging.log(logging.INFO, 'sleeping for {} minutes'.format(args.interval))
+        time.sleep(int(args.interval)*60)
+
+
+if __name__ == '__main__':
+    main()

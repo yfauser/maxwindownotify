@@ -1,0 +1,15 @@
+README.rst
+setup.py
+maxwindownotify/__init__.py
+maxwindownotify/maxwindownotify.py
+maxwindownotify.egg-info/PKG-INFO
+maxwindownotify.egg-info/SOURCES.txt
+maxwindownotify.egg-info/dependency_links.txt
+maxwindownotify.egg-info/entry_points.txt
+maxwindownotify.egg-info/requires.txt
+maxwindownotify.egg-info/top_level.txt
+maxwindownotify/notifier_modules/__init__.py
+maxwindownotify/notifier_modules/__init__.pyc
+maxwindownotify/notifier_modules/pushover_notifier.py
+maxwindownotify/notifier_modules/pushover_notifier.pyc
+maxwindownotify/notifier_modules/stdout_notifier.py

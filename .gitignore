@@ -1,7 +1,11 @@
 openweathermap-api-example
-/.idea/
-*.pyc
-/notifier_modules/*.pyc
+/maxwindownotify/.idea/
+/maxwindownotify/*.pyc
+/maxwindownotify/notifier_modules/*.pyc
+.DS_Store
+.idea
+
+
 
 
 
