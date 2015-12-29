@@ -62,3 +62,19 @@ Example:
 ```bash
 maxwindownotify -k 82k4v1b99s41212e5bf5490432bb89f4 -u abcCKnM9uYhjng3kLV6czGFUsmZ76D -p ahxYZcjhXT6P5zDt265LGyuLVaDQNx -i 15 -c Berlin -t 8
 ```
+
+## Using docker to run maxwindownotify
+
+You can also simply use my prepared Docker image to run maxwindownotify as a container
+
+*NOTE:* When running maxwindownotify as a container, you can either use the docker networking host mode, or rely on the tcp scan fallback discovery method to discover the Max Cube on you network. The broadcast discovery method is faster and more clean.
+
+#### Method 1: Running the container in host mode:
+```bash
+docker run -d --net="host" yfauser/maxwindownotify -k 82k4v1b99s41212e5bf5490432bb89f4 -u abcCKnM9uYhjng3kLV6czGFUsmZ76D -p ahxYZcjhXT6P5zDt265LGyuLVaDQNx -i 15 -c Berlin -t 8
+```
+
+#### Method 2: rely on tcp scan fallback discovery method
+```bash
+docker run -d yfauser/maxwindownotify -k 82k4v1b99s41212e5bf5490432bb89f4 -u abcCKnM9uYhjng3kLV6czGFUsmZ76D -p ahxYZcjhXT6P5zDt265LGyuLVaDQNx -i 15 -c Berlin -t 8
+```
