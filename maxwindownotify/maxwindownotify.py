@@ -95,8 +95,8 @@ class MaxConnection:
         """
         self.discover_ip_range = discover_ip_subnet
         self.echo_port = echo_port
-        self.cube_data, self.cube_ip = self.discover_cube()
         self.cube_port = cube_port
+        self.cube_data, self.cube_ip = self.discover_cube()
 
     def discover_cube(self):
         """
@@ -106,6 +106,21 @@ class MaxConnection:
         [1] contains the IP of the discovered Max CUBE
         """
         subnet_broadcast = str(IPNetwork(self.discover_ip_range).broadcast)
+        subnet_host_list = IPNetwork(self.discover_ip_range).iter_hosts()
+        cube_data_dict, cube_ip = self._disc_cube_bcast(subnet_broadcast)
+
+        if not cube_ip:
+            logging.log(logging.WARNING, 'Could not find MAX Cube on the network through broadcast discovery, '
+                                         'retrying with ip range tcp scan, this may take a while')
+            cube_ip = self._disc_cube_ucast(subnet_host_list)
+
+        if not cube_ip:
+            logging.log(logging.ERROR, 'Could not find any MAX Cube on the network')
+            sys.exit()
+
+        return cube_data_dict, cube_ip
+
+    def _disc_cube_bcast(self, subnet_broadcast):
         udp_send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         udp_send_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
         udp_send_socket.settimeout(5)
@@ -119,7 +134,7 @@ class MaxConnection:
             udp_send_socket.sendto(hello_data, (subnet_broadcast, self.echo_port))
         except (socket.timeout, socket.error) as e:
             logging.log(logging.ERROR, 'Could not send UDP discover brodcast, socket error is: {}'.format(e))
-            sys.exit()
+            return None, None
 
         cube_data = None
         cube_ip = None
@@ -134,7 +149,7 @@ class MaxConnection:
                 udp_send_socket.close()
                 udp_recv_socket.close()
                 logging.log(logging.ERROR, 'No MAX Cube reacted to our subnet broadcast, socket error is: {}'.format(e))
-                sys.exit()
+                return None, None
 
         cube_data_dict = {}
         if cube_data:
@@ -146,6 +161,24 @@ class MaxConnection:
         udp_recv_socket.close()
 
         return cube_data_dict, cube_ip
+
+    def _disc_cube_ucast(self, ip_range_list):
+        for ip in ip_range_list:
+            if self._test_connect_to_cube(str(ip)):
+                return str(ip)
+
+        return None
+
+    def _test_connect_to_cube(self, ip):
+        try:
+            tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            tcp_socket.settimeout(0.5)
+            tcp_socket.connect((ip, self.cube_port))
+            tcp_socket.close()
+            return True
+        except (socket.timeout, socket.error) as e:
+            tcp_socket.close()
+            return None
 
     def _get_cube_data(self):
         tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

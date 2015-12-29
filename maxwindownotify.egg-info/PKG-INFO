@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: maxwindownotify
-Version: 1.0
+Version: 1.1
 Summary: This little script (daemon) will poll for the status of all window sensors known to a MAX Cube system and check for open windows
 Home-page: http://github.com/yfauser/maxwindownotify
 Author: yfauser
@@ -41,7 +41,7 @@ Description: Max Open Window Notifier
         
         .. code:: bash
         
-            $ python maxwindownotify.py --help
+            $ maxwindownotify --help
             usage: maxwindownotify.py [-h] [-i INTERVAL] [-n NETWORK] [-c CITY]
                                       [-t THRESHOLD] -k OWMAPPID [-s] [-u USER] [-p TOKEN]
                                       [-v]
@@ -80,7 +80,7 @@ Description: Max Open Window Notifier
         
         .. code:: bash
         
-            python maxwindownotify.py -k 82k4v1b99s41212e5bf5490432bb89f4 -u abcCKnM9uYhjng3kLV6czGFUsmZ76D -p ahxYZcjhXT6P5zDt265LGyuLVaDQNx -i 15 -c Berlin -t 8
+            maxwindownotify -k 82k4v1b99s41212e5bf5490432bb89f4 -u abcCKnM9uYhjng3kLV6czGFUsmZ76D -p ahxYZcjhXT6P5zDt265LGyuLVaDQNx -i 15 -c Berlin -t 8
         
 Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
