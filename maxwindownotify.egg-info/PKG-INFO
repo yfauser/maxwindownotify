@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: maxwindownotify
-Version: 1.1
+Version: 1.1.1
 Summary: This little script (daemon) will poll for the status of all window sensors known to a MAX Cube system and check for open windows
 Home-page: http://github.com/yfauser/maxwindownotify
 Author: yfauser

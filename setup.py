@@ -14,7 +14,7 @@ long_description = read('README.rst')
 
 setup(
     name='maxwindownotify',
-    version='1.1',
+    version='1.1.1',
     packages=['maxwindownotify'],
     package_data={'maxwindownotify':['*'], 'maxwindownotify':['notifier_modules/*']},
     url='http://github.com/yfauser/maxwindownotify',

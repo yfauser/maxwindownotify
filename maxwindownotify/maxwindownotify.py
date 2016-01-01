@@ -33,7 +33,6 @@ from notifier_modules.pushover_notifier import Notifier
 import requests
 import json
 from collections import OrderedDict
-from collections import namedtuple
 
 
 class Session:
@@ -79,8 +78,8 @@ class Session:
             if response.status_code in [200]:
                 if 'Content-Type' in response.headers:
                     if response.headers['Content-Type'].find('application/json') != -1:
-                        response_content = json.loads(response.content,
-                                                      object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+                        print response.content
+                        response_content = json.loads(response.content)
 
             return OrderedDict([('status', response.status_code), ('body', response_content)])
 
@@ -327,7 +326,7 @@ class OpenWeatherMap:
         response = self._session.do_request('GET', self.apiurl, params=params)
 
         try:
-            temperature = response['body'].main.temp
+            temperature = response['body']['main']['temp']
             return temperature
         except (TypeError, AttributeError):
             logging.log(logging.ERROR, 'current temperature for {} not received, status code was {}, response body '
